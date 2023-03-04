@@ -1,21 +1,20 @@
 #include "Shapes.hpp"
 
-bool overlaps_shape(std::vector<Shape*> shapes, Shape* pShape) {
-    for (int y = pShape->y; y < pShape->y + pShape->height; y++) {
-        
-        for (int x = pShape->x; x < pShape->x + pShape->width; x += 2) {
-            
-            for (int i = 0; i < shapes.size(); i++) {
-                
-                if (shapes.at(i)->occupies_position(shapes.at(i), x, y)) {
-                    return true;
-                }   
-            }   
+bool overlaps_shape(int* board_map, int* shape_map) {
+    for (int i = 0; i < 10; i++) {
+        if ((board_map[i] & shape_map[i]) != 0) {
+            return true;
         }
     }
 
     return false;
 }
+
+int* init_board_map() {
+    int* p = new int[10];
+    memset(p, 0, sizeof(int) * 10);
+    return p;
+};
 
 void Shape::GotoPosition() {
     std::cout << GOTO_BOARD_START;
@@ -29,49 +28,67 @@ void Shape::GotoPosition() {
     }
 };
 
-bool Shape::Fall(std::vector<Shape*> shapes) {
+bool Shape::Fall(int* board_map) {
     if (y + height == 20) {
         return false;
     }
 
     y++;
 
-    if (overlaps_shape(shapes, this)) {
+    for (int i = 0; i < 10; i++) {
+        *(shape_map + i) <<= 1;
+    }
+
+    if (overlaps_shape(board_map, shape_map)) {
         y--;
         return false;
+    }
+
+    for (int i = 0; i < 10; i++) {
+        *(shape_map + i) >>= 1;
     }
 
     return true;
 };
 
-bool Shape::Right(std::vector<Shape*> shapes) {
+bool Shape::Right(int* board_map) {
     if (x + width == 20) {
         return false;
     }
 
     x += 2;
 
-    if (overlaps_shape(shapes, this)) {
+    int* new_shape_map = init_board_map();
+    memcpy(shape_map, new_shape_map + 1, sizeof(int) * 9);
+
+    if (overlaps_shape(board_map, new_shape_map)) {
         x -= 2;
         return false;
     }
+
+    shape_map = new_shape_map;
 
     draw_func(this);
     return true;
 };
 
-bool Shape::Left(std::vector<Shape*> shapes) {
+bool Shape::Left(int* board_map) {
     if (x == 0) {
         return false;
     }
 
     x -= 2;
 
-    if (overlaps_shape(shapes, this)) {
+    int* new_shape_map = init_board_map();
+    memcpy(shape_map + 1, new_shape_map, sizeof(int) * 9);
+
+    if (overlaps_shape(board_map, new_shape_map)) {
         x += 2;
         return false;
     }
 
+    shape_map = new_shape_map;
+    
     draw_func(this);
     return true;
 };
@@ -88,11 +105,8 @@ Square::Square(int X, int Y) {
         std::cout << DEFAULT_BLUE << "\033[4P" << "\033[4@" << CURSOR_DOWN << "\033[4P" << "\033[4@";
     };
 
-    occupies_position = [](Shape* s, int X, int Y) {
-        return
-            (X == s->x && Y == s->y) ||
-            (X == s->x && Y == s->y + 1) ||
-            (X == s->x + 2 && Y == s->y) ||
-            (X == s->x + 2 && Y == s->y + 1);
-    };
+    shape_map = init_board_map();
+
+    *(shape_map + x) = (0x11 << y);
+    *(shape_map + x + 1) = (0x11 << y);
 };

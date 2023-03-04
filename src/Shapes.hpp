@@ -8,14 +8,14 @@
 class Shape {
 public:
     int x, y, width, height;
+    int* shape_map;
 
     void (*draw_func)(Shape* s);
-    bool (*occupies_position)(Shape* s, int X, int Y);
 
     void GotoPosition();
-    bool Fall(std::vector<Shape*> shapes);
-    bool Right(std::vector<Shape*> shapes);
-    bool Left(std::vector<Shape*> shapes);
+    bool Fall(int* board_map);
+    bool Right(int* board_map);
+    bool Left(int* board_map);
 };
 
 
@@ -25,4 +25,6 @@ public:
 };
 
 
-bool overlaps_shape(std::vector<Shape*> shapes, Shape* pShape);
+bool overlaps_shape(int* board_map, int* shape_map);
+
+int* init_board_map();
