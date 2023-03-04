@@ -3,3 +3,5 @@
 main-debug
 replit.nix
 build/*
+.breakpoints
+log.txt

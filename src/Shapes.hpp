@@ -3,6 +3,7 @@
 #endif
 
 #include <vector>
+#include <fstream>
 
 
 class Shape {
@@ -28,3 +29,12 @@ public:
 bool overlaps_shape(int* board_map, int* shape_map);
 
 int* init_board_map();
+
+
+std::ofstream log_file("log.txt");
+
+void log(const char* msg) {
+    log_file << msg << "\n";
+    log_file.flush();
+}
+
