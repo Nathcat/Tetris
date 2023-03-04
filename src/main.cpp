@@ -37,6 +37,9 @@ void left_right_controller(struct program_state* state) {
                 case 67: result = state->falling_shape->Right(state->board_map); break;
                 case 68: result = state->falling_shape->Left(state->board_map); break;
             }
+        } else if (a[0] == 27) {
+            state->running = false;
+            exit(0);
         }
     }
 };
@@ -67,7 +70,7 @@ int main() {
     struct program_state* state = (struct program_state*) malloc(sizeof(program_state));
 
     // Each int represents a column, with the right hand side (small end) being the top of the column.
-    state->board_map = init_board_map();
+    state->board_map = new int[10];
     
     // Set the running state to true
     state->running = true;
@@ -96,7 +99,7 @@ int main() {
     // Reset the cursor
     std::cout << LOAD_CURSOR << DEFAULT << std::endl;
 
-    while (true) {
+    while (state->running) {
         // Wait on second
         sleep(1);
 
@@ -115,7 +118,7 @@ int main() {
 
         // Draw the active shape
         state->falling_shape->draw_func(state->falling_shape);
-
+        
         // Reset the cursor
         std::cout << LOAD_CURSOR << DEFAULT << std::endl;
     }

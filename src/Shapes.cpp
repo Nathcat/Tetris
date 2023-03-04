@@ -41,11 +41,12 @@ bool Shape::Fall(int* board_map) {
 
     if (overlaps_shape(board_map, shape_map)) {
         y--;
+        
+        for (int i = 0; i < 10; i++) {
+            *(shape_map + i) >>= 1;
+        }
+        
         return false;
-    }
-
-    for (int i = 0; i < 10; i++) {
-        *(shape_map + i) >>= 1;
     }
 
     return true;
@@ -58,8 +59,11 @@ bool Shape::Right(int* board_map) {
 
     x += 2;
 
-    int* new_shape_map = init_board_map();
-    memcpy(shape_map, new_shape_map + 1, sizeof(int) * 9);
+    int* new_shape_map = new int[10];
+    
+    for (int i = 0; i < 9; i++) {
+        *(new_shape_map + i + 1) = *(shape_map + i);
+    }
 
     if (overlaps_shape(board_map, new_shape_map)) {
         x -= 2;
@@ -79,9 +83,12 @@ bool Shape::Left(int* board_map) {
 
     x -= 2;
 
-    int* new_shape_map = init_board_map();
-    memcpy(shape_map + 1, new_shape_map, sizeof(int) * 9);
-
+    int* new_shape_map = new int[10];
+    
+    for (int i = 0; i < 9; i++) {
+        *(new_shape_map + i) = *(shape_map + i + 1);
+    }
+    
     if (overlaps_shape(board_map, new_shape_map)) {
         x += 2;
         return false;
@@ -105,8 +112,8 @@ Square::Square(int X, int Y) {
         std::cout << DEFAULT_BLUE << "\033[4P" << "\033[4@" << CURSOR_DOWN << "\033[4P" << "\033[4@";
     };
 
-    shape_map = init_board_map();
+    shape_map = new int[10];
 
-    *(shape_map + x) = (0x11 << y);
-    *(shape_map + x + 1) = (0x11 << y);
+    *(shape_map + (x / 2)) = (0b11 << y);
+    *(shape_map + (x / 2) + 1) = (0b11 << y);
 };
