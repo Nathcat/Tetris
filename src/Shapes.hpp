@@ -10,13 +10,21 @@ class Shape {
 public:
     int x, y, width, height;
     int* shape_map;
-
     void (*draw_func)(Shape* s);
 
     void GotoPosition();
     bool Fall(int* board_map);
     bool Right(int* board_map);
     bool Left(int* board_map);
+
+    Shape() = default;
+    Shape(const Shape& b);   // Copy constructor
+    Shape(Shape&& b);  // Move constructor
+
+    Shape& operator=(const Shape& b);   // Copy assignment
+    Shape& operator=(Shape&& b);  // Move assignment
+
+    ~Shape();
 };
 
 

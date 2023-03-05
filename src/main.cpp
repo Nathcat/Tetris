@@ -12,9 +12,9 @@
  */
 struct program_state {
     bool running;
-    Shape* falling_shape;
+    Shape falling_shape;
     int* board_map;
-    std::vector<Shape*> shapes;
+    std::vector<Shape> shapes;
 };
 
 /**
@@ -40,8 +40,8 @@ void left_right_controller(struct program_state* state) {
             log("l/r: Is arrow key");
             
             switch (a[2]) {
-                case 67: result = state->falling_shape->Right(state->board_map); break;
-                case 68: result = state->falling_shape->Left(state->board_map); break;
+                case 67: result = state->falling_shape.Right(state->board_map); break;
+                case 68: result = state->falling_shape.Left(state->board_map); break;
             }
         } else if (a[0] == 27) {
             log("l/r: Is escape key");
@@ -57,20 +57,21 @@ void left_right_controller(struct program_state* state) {
  * @param state Pointer to the state struct.
  */
 void new_random_shape(struct program_state* state) {
+    log("new_random_shape(): Merging shape and board maps");
+    for (int i = 0; i < 10; i++) {
+        *(state->board_map + i) |= *(state->falling_shape.shape_map + i);
+    }
+
     log("new_random_shape(): Pushing shape");
     state->shapes.push_back(state->falling_shape);
 
-    log("new_random_shape(): Merging shape and board maps");
-    for (int i = 0; i < 10; i++) {
-        *(state->board_map + i) |= *(state->falling_shape->shape_map + i);
-    }
-
     log("new_random_shape(): Creating a new shape");
-    state->falling_shape = new Square(((rand() % 10) * 2), 0);
+    Square s(((rand() % 10) * 2), 0);
+    state->falling_shape = s;
 
     log("new_random_shape(): Checking shape location for edge overlap");
-    if (state->falling_shape->x + state->falling_shape->width > 20) {
-        state->falling_shape->x = 20 - state->falling_shape->width;
+    if (state->falling_shape.x + state->falling_shape.width > 20) {
+        state->falling_shape.x = 20 - state->falling_shape.width;
     }
 
     log("new_random_shape(): Done!");
@@ -85,6 +86,14 @@ bool has_lost(int* board_map) {
 
     return false;
 };
+
+void print_bits(int a, int count) {
+    for (int i = count - 1; i >= 0; i--) {
+        log_file << ((a >> i) & 1);
+    }
+
+    log_file << "\n";
+}
 
 int main() {
     log("----------PROGRAM START----------");
@@ -120,16 +129,17 @@ int main() {
     log("Making new shape");
 
     // Create a new shape
-    state->falling_shape = new Square(((rand() % 10) * 2), 0);
+    Square s(((rand() % 10) * 2), 0);
+    state->falling_shape = s;
 
-    if (state->falling_shape->x + state->falling_shape->width >= 20) {
-        state->falling_shape->x = 20 - state->falling_shape->width;
+    if (state->falling_shape.x + state->falling_shape.width >= 20) {
+        state->falling_shape.x = 20 - state->falling_shape.width;
     }
 
     log("Drawing new shape");
 
     // Draw the shape to the board
-    state->falling_shape->draw_func(state->falling_shape);
+    state->falling_shape.draw_func(&(state->falling_shape));
 
     log("Starting l/r controller");
     
@@ -141,6 +151,16 @@ int main() {
 
     while (state->running) {
         log("----------NEW MAINLOOP----------");
+
+        log("Board map:");
+        for (int i = 0; i < 10; i++) {
+            print_bits(state->board_map[i], 20);
+        }
+
+        log("Shape map:");
+        for (int i = 0; i < 10; i++) {
+            print_bits(state->falling_shape.shape_map[i], 20);
+        }
         
         if (has_lost(state->board_map)) {
             log("has_lost() TRUE");
@@ -158,7 +178,7 @@ int main() {
         sleep(1);
 
         // If the shape cant fall anymore (on the floor), create a new shape
-        if (!state->falling_shape->Fall(state->board_map)) {
+        if (!state->falling_shape.Fall(state->board_map)) {
             log("Fall() FALSE");
             new_random_shape(state);
         }
@@ -170,11 +190,11 @@ int main() {
 
         // Draw all the old shapes
         for (int i = 0; i < state->shapes.size(); i++) {
-            state->shapes.at(i)->draw_func(state->shapes.at(i));
+            state->shapes.at(i).draw_func(&(state->shapes.at(i)));
         }
 
         // Draw the active shape
-        state->falling_shape->draw_func(state->falling_shape);
+        state->falling_shape.draw_func(&(state->falling_shape));
 
         log("Drawing done");
         

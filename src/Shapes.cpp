@@ -10,10 +10,78 @@ bool overlaps_shape(int* board_map, int* shape_map) {
     return false;
 }
 
-int* init_board_map() {
-    int* p = new int[10];
-    memset(p, 0, sizeof(int) * 10);
-    return p;
+
+Shape::Shape(const Shape& b) {
+    log("Shape copy ctor");
+    
+    x         = b.x;
+    y         = b.y;
+    width     = b.width;
+    height    = b.height;
+    shape_map = b.shape_map;
+    draw_func = b.draw_func;
+};
+
+Shape::Shape(Shape&& b) {
+    log("Shape move ctor");
+    if (this != &b) {
+        x         = b.x;
+        y         = b.y;
+        width     = b.width;
+        height    = b.height;
+        shape_map = b.shape_map;
+        draw_func = b.draw_func;
+        
+        if (b.shape_map) {
+            b.shape_map = nullptr;
+        }
+    
+        if (b.draw_func) {
+            b.draw_func = nullptr;
+        }
+    }
+};
+
+Shape& Shape::operator=(const Shape& b) {
+    log("Shape copy assignment");
+    x         = b.x;
+    y         = b.y;
+    width     = b.width;
+    height    = b.height;
+    shape_map = b.shape_map;
+    draw_func = b.draw_func;
+
+    return *this;
+};
+
+Shape& Shape::operator=(Shape&& b) {
+    log("Shape move assignment");
+    if (this == &b) {
+        return *this;
+    }
+    
+    x         = b.x;
+    y         = b.y;
+    width     = b.width;
+    height    = b.height;
+    shape_map = b.shape_map;
+    draw_func = b.draw_func;
+
+    if (b.shape_map) {
+        b.shape_map = nullptr;
+    }
+    
+    if (b.draw_func) {
+        b.draw_func = nullptr;
+    }
+
+    return *this;
+};
+
+Shape::~Shape() {
+    log("Shape dtor");
+    draw_func = nullptr;
+    delete[] shape_map;
 };
 
 void Shape::GotoPosition() {
